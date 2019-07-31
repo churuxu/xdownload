@@ -9,8 +9,8 @@ var this_dir_ = __dirname;
 var url_ = "";
 var file_ = "";
 
-var username_ = "churuxu";
-var projname_ = "downloader";
+var username_ = "";
+var projname_ = "";
 var api_url_joblist_ = "";
 
 
@@ -25,7 +25,7 @@ function do_help(){
 	console.log("usage: xdownload [options] <url> <file>");
 	console.log("options:");
 	console.log("  -h --help    show help");
-	console.log("  -s --setup   setup paramters");
+	console.log("  -c --config  config paramters");
 	process.exit(1);
 }
 
@@ -37,13 +37,27 @@ function do_error_opt(val){
 
 
 //加载本地配置
-function load_config(){
-	api_url_joblist_ = "https://ci.appveyor.com/api/projects/" + username_ + "/"+ projname_ +"/history?recordsNumber=10";
+function load_config(must){
+	try{
+		var data = fs.readFileSync(this_dir_ + "/config.json");
+		var obj = JSON.parse(data);
+		username_ = obj.username;
+		projname_ = obj.project;
+	}catch(e){
+
+	}
+	if(must){
+		if(!username_.length || !projname_.length){
+			console.log("xdownload not configed");
+			console.log("please run xdownload --config");
+			process.exit(1);
+		}
+	}	
 }
 
 //初始化本地配置
 function do_setup(){
-	console.log("Setup xdownload ...\n");
+	console.log("config xdownload ...\n");
 	load_config();
 	//
 	process.exit(1);
@@ -82,6 +96,7 @@ function fetch_json(url){
 
 //下载文件
 function download_file(url, file){
+	console.log("download: " + url);
 	return new Promise(function(resolv, reject){		
 		var fstream = fs.createWriteStream(file);
 		var req = https.get(url, opt, function(res){
@@ -98,8 +113,10 @@ function download_file(url, file){
 
 //查找已经下载过的任务
 async function find_build(commitmsg){
+	console.log("find build ...");
 	var apiurl = "https://ci.appveyor.com/api/projects/" + username_ + "/"+ projname_ +"/history?recordsNumber=10";
 	var obj = await fetch_json(apiurl);
+	if(!obj || !obj.builds)return null;
 	var builds = obj.builds;
 	for(var i=0;i<builds.length;i++){
 		if(builds[i].message == commitmsg){
@@ -129,9 +146,12 @@ function create_appveyor_yml(url, file){
 //同步代码到git服务器
 function do_update_src(commitmsg){
 	var dir = this_dir_;
+	console.log("git pull ...");
 	cp.execSync("git pull", {cwd:dir}); 
 	create_appveyor_yml(url_, dir + "/appveyor.yml");
+	console.log("git commit ...");
 	cp.execSync("git commit -am " + commitmsg, {cwd:dir});
+	console.log("git push ...");
 	cp.execSync("git push", {cwd:dir}); 
 }
 
@@ -143,6 +163,7 @@ async function wait_build_finish(build){
 	var apiurl = "https://ci.appveyor.com/api/projects/" + username_ + "/"+ projname_ +"/builds/" + build.buildId;	
 	for(var i=0;i<1000;i++){
 		await sleep(2000);
+		console.log("get build status ...");
 		var obj = await fetch_json(apiurl);
 		if(!obj || !obj.build)return false;
 		if(obj.build.status == "success")return obj.build;
@@ -153,7 +174,8 @@ async function wait_build_finish(build){
 
 //执行下载流程
 async function do_download(){
-	load_config();
+	load_config(true);
+		
 	var commitmsg = md5(url_);
 	
 	//查找已有任务
