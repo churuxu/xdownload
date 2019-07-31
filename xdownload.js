@@ -101,18 +101,21 @@ function download_file(url, file){
 			console.log("status:" + res.statusCode);
 			if(res.statusCode == 200){
 				var fstream = fs.createWriteStream(file);
-				res.pipe(fstream);
+				res.pipe(fstream);	
+				res.on('end', resolv);
 			}else if(res.statusCode > 300 && res.statusCode < 400){
 				console.log("use location ...");
 				var req2 = https.get(res.headers.location, function(res2){
 					console.log("status:" + res2.statusCode);
 					if(res2.statusCode == 200){
 						var fstream = fs.createWriteStream(file);
-						res2.pipe(fstream);			
+						res2.pipe(fstream)
+						res2.on('end', resolv);
 					}else{
 						reject("download failed:" + url);
 					}
 				});
+				req2.on('error',reject);	
 			}else{
 				reject("download failed:" + url);
 			}
@@ -183,6 +186,7 @@ async function wait_build_finish(build){
 
 //执行下载流程
 async function do_download(){
+	var t0 = new Date().getTime();
 	load_config(true);
 		
 	var commitmsg = md5(url_);
@@ -220,7 +224,9 @@ async function do_download(){
 	var jobid = nbuild.jobs[0].jobId;
 	var fileurl = "https://ci.appveyor.com/api/buildjobs/" + jobid + "/artifacts/file.bin";
 	await download_file(fileurl, file_);
-	console.log("download ok");
+	
+	var t1 = new Date().getTime();
+	console.log("download ok, used: " + (t1 - t0)+" ms");
 	return true;
 }
 
