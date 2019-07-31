@@ -132,8 +132,8 @@ function create_appveyor_yml(url, file){
 	res += "version: 1.0.{build}\n";
 	res += "\n";
 	res += "environment:\n";
-	res += "\tNAME: file.bin\n";
-	res += ("\tURL: "+url+"\n");
+	res += "  NAME: file.bin\n";
+	res += ("  URL: "+url+"\n");
 	res += "\n";
 	res += "build_script:\n";
 	res += "- cmd: curl -fsSL -o %NAME% %URL%\n";
