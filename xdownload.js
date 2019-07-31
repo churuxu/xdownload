@@ -25,7 +25,7 @@ function do_help(){
 	console.log("usage: xdownload [options] <url> <file>");
 	console.log("options:");
 	console.log("  -h --help    show help");
-	console.log("  -c --config  config paramters");
+	//console.log("  -c --config  config paramters");
 	process.exit(1);
 }
 
@@ -56,10 +56,9 @@ function load_config(must){
 }
 
 //初始化本地配置
-function do_setup(){
+function do_config(){
 	console.log("config xdownload ...\n");
 	load_config();
-	//
 	process.exit(1);
 }
 
@@ -97,16 +96,28 @@ function fetch_json(url){
 //下载文件
 function download_file(url, file){
 	console.log("download: " + url);
-	return new Promise(function(resolv, reject){		
-		var fstream = fs.createWriteStream(file);
-		var req = https.get(url, opt, function(res){
-			res.pipe(fstream);
-			res.on('end', function(){
-				fstream.end();
-				resolv();
-			});
+	return new Promise(function(resolv, reject){
+		var req = https.get(url, function(res){
+			console.log("status:" + res.statusCode);
+			if(res.statusCode == 200){
+				var fstream = fs.createWriteStream(file);
+				res.pipe(fstream);
+			}else if(res.statusCode > 300 && res.statusCode < 400){
+				console.log("use location ...");
+				var req2 = https.get(res.headers.location, function(res2){
+					console.log("status:" + res2.statusCode);
+					if(res2.statusCode == 200){
+						var fstream = fs.createWriteStream(file);
+						res2.pipe(fstream);			
+					}else{
+						reject("download failed:" + url);
+					}
+				});
+			}else{
+				reject("download failed:" + url);
+			}
 		});
-		req.on('error', reject);
+		req.on('error',reject);		
 	});	
 }
 
@@ -157,17 +168,14 @@ function do_update_src(commitmsg){
 
 //等待build结束, 返回一个新的build
 async function wait_build_finish(build){
-	if(build.status == "success"){
-		return build;
-	}
 	var apiurl = "https://ci.appveyor.com/api/projects/" + username_ + "/"+ projname_ +"/builds/" + build.buildId;	
-	for(var i=0;i<1000;i++){
-		await sleep(2000);
+	for(var i=0;i<1000;i++){		
 		console.log("get build status ...");
 		var obj = await fetch_json(apiurl);
 		if(!obj || !obj.build)return false;
 		if(obj.build.status == "success")return obj.build;
 		if(obj.build.status == "failed")return false;
+		await sleep(2000);
 	}
 	return false;
 }
@@ -207,7 +215,8 @@ async function do_download(){
 	}
 	
 	//下载任务附件
-	var jobid = build.jobs[0].jobId;
+	//console.log(nbuild);
+	var jobid = nbuild.jobs[0].jobId;
 	var fileurl = "https://ci.appveyor.com/api/buildjobs/" + jobid + "/artifacts/file.bin";
 	await download_file(fileurl, file_);
 	return true;
@@ -220,8 +229,8 @@ process.argv.forEach((val, index) => {
 		if(val.charAt(0) == '-'){ //option
 			if(val == "--help" || val == "-h"){
 				do_help();
-			}else if(val == "--setup" || val == "-s"){
-				do_setup();
+			}else if(val == "--config" || val == "-c"){
+				do_config();
 			}else{
 				do_error_opt(val);
 			}

@@ -2,7 +2,7 @@ version: 1.0.{build}
 
 environment:
   NAME: file.bin
-  URL: https://github.com/svaarala/duktape-releases/archive/v2.3.0.tar.gz
+  URL: https://github.com/facebook/yoga/archive/1.14.0.tar.gz
 
 build_script:
 - cmd: curl -fsSL -o %NAME% %URL%

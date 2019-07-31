@@ -15,7 +15,8 @@
 3. 将本地这个库目录添加到PATH环境变量
 4. 配置git保存密码或ssh方式，达到git push不用输入密码的效果
 5. 在appveyor.com上建立project
-6. 运行```xdownload --config```进行完成安装
+6. 建立config.json文件，配置你自己的用户名和项目名，内容例如
+```{"username":"churuxu","project":"xdownload"}```
 
 # 实现原理
 1. 下载url命令写入本地文件
