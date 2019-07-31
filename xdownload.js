@@ -147,6 +147,7 @@ function create_appveyor_yml(url, file){
 	res += ("  URL: "+url+"\n");
 	res += "\n";
 	res += "build_script:\n";
+	res += "- cmd: echo %URL%\n";
 	res += "- cmd: curl -fsSL -o %NAME% %URL%\n";
 	res += "\n";
 	res += "artifacts:\n";
@@ -219,6 +220,7 @@ async function do_download(){
 	var jobid = nbuild.jobs[0].jobId;
 	var fileurl = "https://ci.appveyor.com/api/buildjobs/" + jobid + "/artifacts/file.bin";
 	await download_file(fileurl, file_);
+	console.log("download ok");
 	return true;
 }
 

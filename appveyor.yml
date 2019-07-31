@@ -2,9 +2,10 @@ version: 1.0.{build}
 
 environment:
   NAME: file.bin
-  URL: https://github.com/facebook/yoga/archive/1.14.0.tar.gz
+  URL: https://github.com/udp/json-parser/archive/v1.1.0.zip
 
 build_script:
+- cmd: echo %URL%
 - cmd: curl -fsSL -o %NAME% %URL%
 
 artifacts:
