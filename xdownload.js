@@ -129,6 +129,7 @@ function download_file(url, file){
 async function find_build(commitmsg){
 	console.log("find build ...");
 	var apiurl = "https://ci.appveyor.com/api/projects/" + username_ + "/"+ projname_ +"/history?recordsNumber=10";
+	try{
 	var obj = await fetch_json(apiurl);
 	if(!obj || !obj.builds)return null;
 	var builds = obj.builds;
@@ -136,6 +137,9 @@ async function find_build(commitmsg){
 		if(builds[i].message == commitmsg){
 			return builds[i];
 		}
+	}
+	}catch(e){
+		console.log(e);
 	}
 	return null;
 }
@@ -253,7 +257,7 @@ process.argv.forEach((val, index) => {
 });
 
 
-if(url_.length && file_.length){
+if(url_.length && file_.length){	
 	do_download();
 }else{
 	do_help();
