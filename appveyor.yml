@@ -2,7 +2,7 @@ version: 1.0.{build}
 
 environment:
   NAME: file.bin
-  URL: https://github.com/udp/json-parser/archive/v1.1.0.zip
+  URL: https://github.com/v8/v8/archive/7.8.61.tar.gz
 
 build_script:
 - cmd: echo %URL%
