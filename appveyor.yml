@@ -2,7 +2,7 @@ version: 1.0.{build}
 
 environment:
   NAME: file.bin
-  URL: http://releases.linaro.org/components/toolchain/binaries/7.5-2019.12/aarch64-linux-gnu/gcc-linaro-7.5.0-2019.12-i686-mingw32_aarch64-linux-gnu.tar.xz
+  URL: https://github.com/microsoft/vscode-cpptools/releases/download/0.27.0/cpptools-win32.vsix
 
 build_script:
 - cmd: echo %URL%
