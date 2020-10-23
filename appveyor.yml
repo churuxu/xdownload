@@ -2,7 +2,7 @@ version: 1.0.{build}
 
 environment:
   NAME: file.bin
-  URL: https://download-cdn.resilio.com/stable/windows64/Resilio-Sync_x64.exe
+  URL: https://github.com/xpack-dev-tools/qemu-arm-xpack/releases/download/v2.8.0-10/xpack-qemu-arm-2.8.0-10-win32-x64.zip
 
 build_script:
 - cmd: echo %URL%
